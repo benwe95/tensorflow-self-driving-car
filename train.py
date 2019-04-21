@@ -6,7 +6,7 @@ from SDC_CNN import SDC_CNN
 # Load the data
 data = []
 true_values = []
-with open('./training/driving_log.csv', newline='') as csvfile:
+with open('../training/driving_log.csv', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     for row in reader:
 	    I = np.asarray(Image.open(row[0]))

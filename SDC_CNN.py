@@ -3,7 +3,7 @@ import numpy as np
 
 
 class SDC_CNN:
-    def __init__(self, input_dim, epoch=250, learning_rate=0.001):
+    def __init__(self, input_dim, epoch=2, learning_rate=0.001):
 
         """        
         :param input_dim: dimension of one input
@@ -76,26 +76,30 @@ class SDC_CNN:
 		# Object to save the model
         self.saver = tf.train.Saver()
 
-    def train(self, data, true_values):
+    def get_batch(self, X, true_values, size):
+        a = np.random.choice(len(X), size, replace=False)
+        return (X[a], true_values[a].reshape(size,1))
+
+    def train(self, data, true_values, batch_size=100):
 
         """Train the model with sample data
 
            :param data: a set of training data -> 4D array
-           :param true_values: the true values for the supervised learning"""
+           :param true_values: the true values for the supervised learning
+           :param batch size: the size of the batch for one iteration"""
 
         num_samples = len(data[:,1,1,1])
 
         # Open tensorflow session
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
-
             # Run through epochs
             for i in range(self.epoch):
             	# Run through samples
-                for j in range(num_samples):
-                    sample = data[j,:,:,:].reshape(1, self.input_dim[0], self.input_dim[1], self.input_dim[2])
-                    sample_true_value = true_values[j].reshape(1,1)
-                    o, l, _ = sess.run([self.output_value, self.loss, self.train_op],feed_dict={self.x: sample, self.y: sample_true_value})
+                for j in range(10):
+                    batch_data, batch_true_values = self.get_batch(data, true_values, batch_size)
+                    o, l, _ = sess.run([self.output_value, self.loss, self.train_op],
+                                        feed_dict={self.x: batch_data, self.y: batch_true_values})
                 print('epoch {0}: loss = {1}'.format(i, l))
             self.saver.save(sess, './model.ckpt')
 
@@ -107,8 +111,8 @@ class SDC_CNN:
 
         with tf.Session() as sess:
             self.saver.restore(sess, './model.ckpt')
+            data = data.reshape(1, self.input_dim[0], self.input_dim[1], self.input_dim[2])
             output = sess.run(self.output_value, feed_dict={self.x: data})
-        print('output', output)
         return output
 
 
