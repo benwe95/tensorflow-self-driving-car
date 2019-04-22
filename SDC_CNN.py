@@ -3,7 +3,7 @@ import numpy as np
 
 
 class SDC_CNN:
-    def __init__(self, input_dim, epoch=15, learning_rate=0.0001):
+    def __init__(self, input_dim, epoch=10000, learning_rate=0.0001):
 
         """        
         :param input_dim: dimension of one input
@@ -80,7 +80,7 @@ class SDC_CNN:
         a = np.random.choice(len(X), size, replace=False)
         return (X[a], true_values[a].reshape(size,1))
 
-    def train(self, data, true_values, batch_size=300):
+    def train(self, data, true_values, batch_size=400):
 
         """Train the model with sample data
 
@@ -94,13 +94,18 @@ class SDC_CNN:
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             # Run through epochs
+            pc = int(self.epoch/1000)
+            pc_count = 0.0
             for i in range(self.epoch):
             	# Run through samples
-                for j in range(20):
-                    batch_data, batch_true_values = self.get_batch(data, true_values, batch_size)
-                    o, l, _ = sess.run([self.output_value, self.loss, self.train_op],
-                                        feed_dict={self.x: batch_data, self.y: batch_true_values})
-                print('epoch {0}: loss = {1}'.format(i, l))
+                batch_data, batch_true_values = self.get_batch(data, true_values, batch_size)
+                o, l, _ = sess.run([self.output_value, self.loss, self.train_op],
+                                    feed_dict={self.x: batch_data, self.y: batch_true_values})
+                if i % pc == 0:
+                	pc_count += 0.1
+                	print(str(pc_count) + " %")
+                	print('epoch {0}: loss = {1}'.format(i, l))
+
             self.saver.save(sess, './model.ckpt')
 
     def predict(self, data):

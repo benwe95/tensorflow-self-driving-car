@@ -27,18 +27,11 @@ true_values = true_values[index]
 data = data[index]
 
 print(len(true_values))
-
-
-
-
-
-
-
 input_dim = list(data[1,:,:,:].shape)
 
 # Create the convolutional neural network
-#sdc_cnn = SDC_CNN(input_dim)
-#sdc_cnn.train(data, true_values)
+sdc_cnn = SDC_CNN(input_dim)
+sdc_cnn.train(data, true_values)
 
 
 
