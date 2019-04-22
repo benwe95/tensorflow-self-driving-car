@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image
 import csv
 from SDC_CNN import SDC_CNN
+import scipy
 
 # Load the data
 data = []
@@ -9,8 +10,9 @@ true_values = []
 with open('./training/driving_log.csv', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     for row in reader:
-	    I = np.asarray(Image.open(row[0]))
-	    data.append(I)
+	    image = np.asarray(Image.open(row[0]))
+	    image_resized = scipy.misc.imresize(image, [66, 200])
+	    data.append(image_resized)
 	    true_values.append(row[3])
 
 data = np.asarray(data)
@@ -19,7 +21,7 @@ print("data loaded")
 
 # select data to balance zero and non-zero
 index_of_non_0 = np.where(true_values != '0')[0]
-index_of_0 = np.where(true_values == '0')[0][0:len(index_of_non_0)]
+index_of_0 = np.where(true_values == '0')[0][0:100]
 index = np.array(list(index_of_0) + list(index_of_non_0))
 np.random.shuffle(index)
 
