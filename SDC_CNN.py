@@ -3,7 +3,7 @@ import numpy as np
 
 
 class SDC_CNN:
-    def __init__(self, input_dim, epoch=2, learning_rate=0.001):
+    def __init__(self, input_dim, epoch=15, learning_rate=0.0001):
 
         """        
         :param input_dim: dimension of one input
@@ -80,7 +80,7 @@ class SDC_CNN:
         a = np.random.choice(len(X), size, replace=False)
         return (X[a], true_values[a].reshape(size,1))
 
-    def train(self, data, true_values, batch_size=100):
+    def train(self, data, true_values, batch_size=300):
 
         """Train the model with sample data
 
@@ -96,7 +96,7 @@ class SDC_CNN:
             # Run through epochs
             for i in range(self.epoch):
             	# Run through samples
-                for j in range(10):
+                for j in range(20):
                     batch_data, batch_true_values = self.get_batch(data, true_values, batch_size)
                     o, l, _ = sess.run([self.output_value, self.loss, self.train_op],
                                         feed_dict={self.x: batch_data, self.y: batch_true_values})
