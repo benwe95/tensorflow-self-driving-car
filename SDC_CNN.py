@@ -4,7 +4,7 @@ import math
 
 
 class SDC_CNN:
-    def __init__(self, input_dim, epochs=200, learning_rate=0.0001):
+    def __init__(self, input_dim, epochs=400, initial_learning_rate=0.1):
 
         """        
         :param input_dim: dimension of one input
@@ -13,12 +13,13 @@ class SDC_CNN:
         
         # Hyperparameters
         self.epochs = epochs
-        self.learning_rate = learning_rate
+        self.learning_rate = initial_learning_rate
         self.input_dim = input_dim
         self.L2_norm = 0.001
 
         self.x = tf.placeholder(dtype=tf.float32, shape=[None]+self.input_dim)
         self.y = tf.placeholder(dtype=tf.float32, shape=[None, 1])
+        self.learning_rate_placeholder = tf.placeholder(dtype=tf.float32)
 
         def conv_layer(x, W, b, strides):
             conv = tf.nn.conv2d(x, W, strides=strides, padding='VALID')
@@ -78,16 +79,16 @@ class SDC_CNN:
         variables = tf.trainable_variables()
         self.loss = tf.add(tf.reduce_mean(tf.square(tf.subtract(self.y, self.output_value))), 
         tf.add_n([tf.nn.l2_loss(variable) for variable in variables]) * self.L2_norm)
-        self.train_op = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(self.loss)
+        self.train_op = tf.train.AdamOptimizer(learning_rate=self.learning_rate_placeholder).minimize(self.loss)
 
-		# object to save the model
+	    # object to save the model
         self.saver = tf.train.Saver()
 
     def get_batch(self, X, true_values, size):
         a = np.random.choice(len(X), size, replace=False)
         return (X[a], true_values[a].reshape(size,1))
 
-    def train(self, data, true_values, batch_size=400):
+    def train(self, X, Y, batch_size=400):
 
         """Train the model with sample data
 
@@ -95,21 +96,29 @@ class SDC_CNN:
            :param true_values: the true values for the supervised learning
            :param batch size: the size of the batch for one iteration"""
 
-        num_samples = len(data[:,1,1,1])
+        X_train = X[:int(len(X) * 0.8)]
+        Y_train = Y[:int(len(Y) * 0.8)]
+
+        X_val = X[-int(len(X) * 0.2):]
+        Y_val = Y[-int(len(Y) * 0.2):]
+
+        num_samples = len(X[:,1,1,1])
 
         # open tensorflow session
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             # run through epochs
             for epoch in range(self.epochs):
-            	# Run through dataset
+                # Run through dataset
                 for i in range(int(num_samples/batch_size)):
-                    batch_data, batch_true_values = self.get_batch(data, true_values, batch_size)
-                    o, l, _ = sess.run([self.output_value, self.loss, self.train_op],
-                                        feed_dict={self.x: batch_data, self.y: batch_true_values})
-                    if i % 10 == 0:
-                        print('epoch {0}: loss = {1}'.format(i, l))
+                    batch_X_train, batch_Y_train = self.get_batch(X_train, Y_train, batch_size)
+                    l, _ = sess.run([self.loss, self.train_op], feed_dict={self.x: batch_X_train, self.y: batch_Y_train, self.learning_rate_placeholder: self.learning_rate})
+                    if l < (self.learning_rate*100):
+                        self.learning_rate = self.learning_rate/10
+                batch_X_val, batch_Y_val = self.get_batch(X_val, Y_val, batch_size)
 
+                l_val = sess.run(self.loss, feed_dict={self.x: batch_X_val, self.y: batch_Y_val})
+                print('epoch {0}: loss train = {1}, loss val : {2}, learning rate = {3}'.format(epoch, l, l_val, self.learning_rate))
             self.saver.save(sess, './model.ckpt')
 
     def predict(self, data):
@@ -119,7 +128,7 @@ class SDC_CNN:
         :param data: a new data -> 3D array"""
 
         with tf.Session() as sess:
-            self.saver.restore(sess, './model.ckpt')
+            self.saver.restore(sess, './modelone/model.ckpt')
             data = data.reshape(1, self.input_dim[0], self.input_dim[1], self.input_dim[2])
             output = sess.run(self.output_value, feed_dict={self.x: data})
         return output

@@ -7,7 +7,7 @@ import scipy
 # Load the data
 data = []
 true_values = []
-with open('./training/driving_log.csv', newline='') as csvfile:
+with open('../training_3/driving_log.csv', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     for row in reader:
 	    image = np.asarray(Image.open(row[0]))
@@ -21,7 +21,7 @@ print("data loaded")
 
 # select data to balance zero and non-zero
 index_of_non_0 = np.where(true_values != '0')[0]
-index_of_0 = np.where(true_values == '0')[0][0:100]
+index_of_0 = np.where(true_values == '0')[0][0:1000]
 index = np.array(list(index_of_0) + list(index_of_non_0))
 np.random.shuffle(index)
 

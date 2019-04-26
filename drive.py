@@ -5,12 +5,13 @@ from PIL import Image
 from io import BytesIO
 from SDC_CNN import SDC_CNN
 import numpy as np
+import scipy
 
 # create a Socket.IO server
 sio = socketio.Server()
 
 # create cnn
-sdc_cnn = SDC_CNN([160,320,3])
+sdc_cnn = SDC_CNN([66,200,3])
 
 # event sent by the simulator
 @sio.on('telemetry')
@@ -25,8 +26,9 @@ def telemetry(sid, data):
         # The current image from the center camera of the car
         image = Image.open(BytesIO(base64.b64decode(data["image"])))
         image = np.asarray(image)
+        image_resized = scipy.misc.imresize(image, [66, 200])
 
-        steer = sdc_cnn.predict(image)
+        steer = sdc_cnn.predict(image_resized)
 
         speed_limit = 0
         if speed > 25:
@@ -35,7 +37,7 @@ def telemetry(sid, data):
             speed_limit = 25
 
         steer = steer[0,0]
-        throttle = 1.0 - steer**2 - (speed/speed_limit)**2
+        throttle = 0.25 - steer**2 -(speed/speed_limit)**2
 
         # response to the simulator with a steer angle and throttle
         send(steer, throttle)
@@ -51,6 +53,7 @@ def connect(sid, environ):
 
 # to send steer angle and throttle to the simulator
 def send(steer, throttle):
+    print("steer : {0}".format(steer*25))
     sio.emit("steer", data={'steering_angle': str(steer), 'throttle': str(throttle)}, skip_sid=True)
 
 
