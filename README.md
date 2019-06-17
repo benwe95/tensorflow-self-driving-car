@@ -12,11 +12,11 @@ The given output is the angle of the steering wheel.
 
 The speed of the car has been fixed to a particular value based on several tests.
 
-The inputs are the RBG images captured by the simulator and resized to 60x200. Whe used nearly 5000 of them with an epoch=400 (so each input has been used 400 times to train the model). The network has been trained with batches of ...
+The inputs are the RBG images captured by the simulator and resized to 60x200. Whe used nearly 5000 of them with an epoch=400 (so each input has been used 400 times to train the model). The network has been trained using batches of size=400
 
 A type of *Gadient Descent* algorithm, the Adam Optimizer, has been used for the backpropagation method to update the weights (both for the kernels and the fully connected layers)
 
-[CNN Design](img/cnn-graph.png)
+![CNN Design](img/cnn-graph.png)
 
 
 ## Getting Started
@@ -29,7 +29,7 @@ A type of *Gadient Descent* algorithm, the Adam Optimizer, has been used for the
 
 ### Installing
 
-Just download the simulator and this repository. 
+Just download the simulator and clone this repository. 
 
 The CNN available on this repository has **already been trained** with images registered locally. The model is stored in the .ckpt files
 
